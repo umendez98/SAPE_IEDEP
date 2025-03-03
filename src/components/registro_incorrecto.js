@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import "./registro_incorrecto.css";
 import Logo from "../images/logo.png";
 import ForbbidenIcon from "../assets/forbidden.svg";
+import { useNavigate } from "react-router-dom";
 
 const RegistroIncorrecto = () => {
   const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -22,7 +24,7 @@ const RegistroIncorrecto = () => {
       <img src={ForbbidenIcon} alt="Forbidden Icon" className="forbidden-icon" />
 
       <button className="error-button">Error, no te encuentras en tu sede IEDEP</button>
-      <button className="inicio-button">Inicio</button>
+      <button className="inicio-button" onClick={() => navigate("/")}>Inicio</button>
     </div>
   );
 };

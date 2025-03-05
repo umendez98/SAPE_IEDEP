@@ -71,6 +71,7 @@
   cursor: pointer;
   transition: 0.3s;
   align-self: center;
+  margin-top: 50px;
 }
 
 .main-button:hover {

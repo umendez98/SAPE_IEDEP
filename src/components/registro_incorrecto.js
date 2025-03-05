@@ -6,9 +6,18 @@ import { useNavigate } from "react-router-dom";
 
 const RegistroIncorrecto = () => {
   const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [errorMensaje, setErrorMensaje] = useState("No se pudo registrar la asistencia.");
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Obtener el mensaje de error de sessionStorage
+    const storedError = sessionStorage.getItem("errorRegistro");
+    if (storedError) {
+      setErrorMensaje(storedError);
+      console.error("Error en registro:", storedError); // Imprime el error en la consola
+    }
+
+    // Actualizar la hora cada segundo
     const interval = setInterval(() => {
       setTime(new Date().toLocaleTimeString());
     }, 1000);
@@ -23,7 +32,7 @@ const RegistroIncorrecto = () => {
 
       <img src={ForbbidenIcon} alt="Forbidden Icon" className="forbidden-icon" />
 
-      <button className="error-button">Error, no te encuentras en tu sede IEDEP</button>
+      <button className="error-button">{errorMensaje}</button>
       <button className="inicio-button" onClick={() => navigate("/")}>Inicio</button>
     </div>
   );

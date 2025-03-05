@@ -1,43 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./reportes.css";
 import Logo from "../images/logo.png";
+import { obtenerUsuariosPorNombre, obtenerRegistrosPorIdUsuario } from "./consumidor.js";
 
 const Reportes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [showCalendar, setShowCalendar] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
-  
-  // Placeholder (hasta implementar los endpoints).
-  const results = [
-    {
-      id: 1,
-      name: "Moíses Espíndola",
-      expediente: "1366",
-      registros: [
-        { fecha: "24/02/25", hora: "9:10", sede: "Central", tipo: "Entrada" },
-        { fecha: "24/02/25", hora: "6:10", sede: "Central", tipo: "Salida" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Moíses Pérez",
-      expediente: "1453",
-      registros: [],
-    },
-    {
-      id: 3,
-      name: "Moíses Arango",
-      expediente: "1523",
-      registros: [],
-    },
-    {
-      id: 4,
-      name: "Moíses Muñoz",
-      expediente: "1784",
-      registros: [],
-    },
-  ];
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setResults([]);
+      return;
+    }
+
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const usuarios = await obtenerUsuariosPorNombre(searchTerm);
+        if (usuarios && usuarios.length > 0) {
+          const usersWithRecords = await Promise.all(
+            usuarios.map(async (user) => {
+              const registros = await obtenerRegistrosPorIdUsuario(user[0][1]); // user[1] = ID de usuario
+              return {
+                id: user[1],
+                name: `${user[0][0]} ${user[0][3]} ${user[0][4]}`, // user[0][0] = Nombre, user[0][3] = Apellido Paterno, user[0][4] = Apellido Materno
+                expediente: user[0], // user[0] = Expediente
+                registros: registros || [],
+              };
+            })
+          );
+          setResults(usersWithRecords);
+        } else {
+          setResults([]);
+        }
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+        setError("No se pudieron cargar los datos.");
+      }
+      setLoading(false);
+    };
+
+    fetchUsers();
+  }, [searchTerm]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -45,7 +54,6 @@ const Reportes = () => {
 
   const handleDateSelect = (e) => {
     setSelectedDate(e.target.value);
-    setShowCalendar(false);
   };
 
   const toggleRow = (id) => {
@@ -82,13 +90,12 @@ const Reportes = () => {
       </div>
 
       <div className="results-container">
-        {results
-          .filter(
-            (person) =>
-              person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              person.expediente.includes(searchTerm)
-          )
-          .map((person) => (
+        {loading ? (
+          <p className="loading">Cargando...</p>
+        ) : error ? (
+          <p className="error-message">{error}</p>
+        ) : results.length > 0 ? (
+          results.map((person) => (
             <div key={person.id} className="result-item">
               <div className="result-header" onClick={() => toggleRow(person.id)}>
                 {person.name}
@@ -107,21 +114,26 @@ const Reportes = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {person.registros.map((registro, index) => (
-                        <tr key={index}>
-                          <td>{person.expediente}</td>
-                          <td>{registro.fecha}</td>
-                          <td>{registro.hora}</td>
-                          <td>{registro.sede}</td>
-                          <td>{registro.tipo}</td>
-                        </tr>
-                      ))}
+                      {person.registros
+                        .filter((registro) => (selectedDate ? registro.fecha === selectedDate : true))
+                        .map((registro, index) => (
+                          <tr key={index}>
+                            <td>{person.expediente}</td>
+                            <td>{registro.fecha}</td>
+                            <td>{registro.hora}</td>
+                            <td>{registro.sede}</td>
+                            <td>{registro.tipo}</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
               )}
             </div>
-          ))}
+          ))
+        ) : (
+          <p className="no-results">No se encontraron registros.</p>
+        )}
       </div>
     </div>
   );

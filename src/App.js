@@ -5,6 +5,7 @@ import RegistroCorrecto from "./components/registro_correcto";
 import RegistroIncorrecto from "./components/registro_incorrecto";
 import Menu_Admin from "./components/menu_admin";
 import Reportes from "./components/reportes";
+import Login from "./components/login";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/registro-incorrecto" element={<RegistroIncorrecto />} />
         <Route path="/menu-admin" element={<Menu_Admin />} />
         <Route path="/reportes" element={<Reportes />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );

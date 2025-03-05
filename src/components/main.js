@@ -31,6 +31,7 @@ const Main = () => {
     // Validar que sea un número válido
     if (isNaN(expedienteInt)) {
       console.error("Error: El expediente no es un número válido.");
+      sessionStorage.setItem("errorRegistro", "El expediente ingresado no es un número válido.");
       navigate("/registro-incorrecto");
       return;
     }
@@ -39,15 +40,24 @@ const Main = () => {
       // Validar si el usuario existe en la API
       const usuario = await obtenerUsuariosPorExpediente(expedienteInt);
       console.log("Usuario obtenido:", usuario);
-      
+
       if (usuario && usuario.length > 0) {
         console.log("Usuario válido:", usuario);
 
-        // Obtener ID del usuario y convertirlo en número entero
-        const id_usuario = parseInt(usuario[0][1], 10);
-        console.log("Usuario", usuario);
+        // Acceder a los atributos del usuario
+        const id_usuario = parseInt(usuario[0][1], 10); // ID del usuario
+        const apellido_materno = usuario[0][4]; // Apellido Materno
+        const apellido_paterno = usuario[0][3]; // Apellido Paterno
+        const nombre_usuario = usuario[0][0]; // Nombre
+
+        // Concatenar nombre completo
+        const nombre_completo = `${nombre_usuario} ${apellido_paterno} ${apellido_materno}`;
+
         console.log("ID de usuario:", id_usuario);
-        const id_lugar = 1; // Simulación de ID de locación
+        console.log("Nombre completo:", nombre_completo);
+
+        // Simulación de ID de locación (ajustar según API)
+        const id_lugar = 1;
 
         // Verificación de datos antes de enviar
         console.log("Enviando a registrar entrada:");
@@ -58,11 +68,21 @@ const Main = () => {
         // Validar que id_usuario sea un número válido antes de registrar
         if (isNaN(id_usuario)) {
           console.error("Error: ID de usuario inválido.");
+          sessionStorage.setItem("errorRegistro", "El ID del usuario obtenido no es válido.");
           navigate("/registro-incorrecto");
           return;
         }
 
-        // Registrar entrada
+        // Guardar datos del usuario en sessionStorage
+        sessionStorage.setItem(
+          "usuario",
+          JSON.stringify({
+            nombre: nombre_completo,
+            expediente: expedienteInt,
+          })
+        );
+
+        // Registrar entrada en la API
         const registro = await registrarEntrada("entrada", id_usuario, id_lugar);
         console.log("Registro de entrada:", registro);
 
@@ -70,10 +90,16 @@ const Main = () => {
         navigate("/registro-correcto");
       } else {
         console.log("Usuario no encontrado");
+        sessionStorage.setItem("errorRegistro", "El expediente ingresado no pertenece a ningún usuario registrado.");
         navigate("/registro-incorrecto");
       }
     } catch (error) {
       console.error("Error al validar el usuario:", error);
+
+      // Guardar el mensaje de error en sessionStorage
+      sessionStorage.setItem("errorRegistro", error.message || "Error desconocido al registrar asistencia.");
+
+      // Redirigir a registro_incorrecto
       navigate("/registro-incorrecto");
     }
   };

@@ -208,6 +208,18 @@ async function obtenerUsuariosPorNombre(nombre) {
     }
 }
 
+async function comprobarRegistros(id_usuario, id_lugar) {
+    const registros = await obtenerRegistrosPorIdUsuario(id_usuario);
+    const ultimo_registro = registros[0][0];
+    if(ultimo_registro == "entrada"){
+        //Ingresa salida
+        return registros= await registrarEntrada("salida",id_usuario, id_lugar)
+    }else if(ultimo_registro == "salida"){
+        //Ingresa entrada
+        return registros = await registrarEntrada("entrada",id_usuario, id_lugar)
+    }
+}
+
 /* 🔍 **Pruebas de las funciones**
 (async () => {
     console.log(await obtenerLocacionPorID(1));
@@ -220,4 +232,4 @@ async function obtenerUsuariosPorNombre(nombre) {
     console.log(await obtenerUsuariosPorNombre("dummy"));
 })();*/
 
-export {obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre};
+export {obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre, comprobarRegistros};

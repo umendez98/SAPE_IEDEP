@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./main.css";
 import Logo from "../images/logo.png";
-import { obtenerUsuariosPorExpediente, registrarEntrada } from "./consumidor.js";
+import { obtenerUsuariosPorExpediente, registrarEntrada, comprobarRegistros } from "./consumidor.js";
 
 const Main = () => {
   const [expediente, setExpediente] = useState("");
@@ -49,6 +49,7 @@ const Main = () => {
         const apellido_materno = usuario[0][4]; // Apellido Materno
         const apellido_paterno = usuario[0][3]; // Apellido Paterno
         const nombre_usuario = usuario[0][0]; // Nombre
+        
 
         // Concatenar nombre completo
         const nombre_completo = `${nombre_usuario} ${apellido_paterno} ${apellido_materno}`;
@@ -73,18 +74,24 @@ const Main = () => {
           return;
         }
 
+        
+        // Registrar entrada en la API
+        const registro = await comprobarRegistros(id_usuario, id_lugar);
+        let tipo_registro = registro.tipo_registro;
+        let fecha_hora= String(registro.fechayHora);
+
+        
+        
         // Guardar datos del usuario en sessionStorage
         sessionStorage.setItem(
           "usuario",
           JSON.stringify({
             nombre: nombre_completo,
             expediente: expedienteInt,
+            fecha_hora: fecha_hora,
+            tipo_registro: tipo_registro
           })
         );
-
-        // Registrar entrada en la API
-        const registro = await registrarEntrada("entrada", id_usuario, id_lugar);
-        console.log("Registro de entrada:", registro);
 
         // Redirigir a registro_correcto
         navigate("/registro-correcto");

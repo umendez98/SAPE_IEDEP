@@ -17,6 +17,22 @@ const Main = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Función para obtener el expediente almacenado en la cookie
+  const getExpedienteFromCookie = () => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      if (cookie.startsWith("expediente=")) {
+        return cookie.split("=")[1];
+      }
+    }
+    return null;
+  };
+
+  // Función para almacenar el expediente en la cookie
+  const setExpedienteCookie = (expediente) => {
+    document.cookie = `expediente=${expediente}; path=/; max-age=31536000`; // 1 año de duración
+  };
+
   const handleInputChange = (e) => {
     setExpediente(e.target.value);
   };
@@ -36,6 +52,15 @@ const Main = () => {
       return;
     }
 
+    // Verificar si hay un expediente almacenado en la cookie
+    const expedienteGuardado = getExpedienteFromCookie();
+    if (expedienteGuardado && expedienteGuardado !== expedienteInt.toString()) {
+      console.error("Error: No puedes registrar otro expediente en este dispositivo.");
+      sessionStorage.setItem("errorRegistro", "No puedes registrar otro expediente en este dispositivo.");
+      navigate("/registro-incorrecto");
+      return;
+    }
+
     try {
       // Validar si el usuario existe en la API
       const usuario = await obtenerUsuariosPorExpediente(expedienteInt);
@@ -49,7 +74,6 @@ const Main = () => {
         const apellido_materno = usuario[0][4]; // Apellido Materno
         const apellido_paterno = usuario[0][3]; // Apellido Paterno
         const nombre_usuario = usuario[0][0]; // Nombre
-        
 
         // Concatenar nombre completo
         const nombre_completo = `${nombre_usuario} ${apellido_paterno} ${apellido_materno}`;
@@ -74,14 +98,11 @@ const Main = () => {
           return;
         }
 
-        
         // Registrar entrada en la API
         const registro = await comprobarRegistros(id_usuario, id_lugar);
         let tipo_registro = registro.tipo_registro;
-        let fecha_hora= String(registro.fechayHora);
+        let fecha_hora = String(registro.fechayHora);
 
-        
-        
         // Guardar datos del usuario en sessionStorage
         sessionStorage.setItem(
           "usuario",
@@ -92,6 +113,9 @@ const Main = () => {
             tipo_registro: tipo_registro
           })
         );
+
+        // Almacenar expediente en la cookie
+        setExpedienteCookie(expedienteInt);
 
         // Redirigir a registro_correcto
         navigate("/registro-correcto");

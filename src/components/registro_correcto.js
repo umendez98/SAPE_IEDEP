@@ -18,21 +18,14 @@ const RegistroCorrecto = () => {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-
-        // Verificar que los datos sean válidos
-        if (parsedUser.nombre && parsedUser.expediente) {
-          setUsuario(parsedUser);
-        } else {
-          console.error("Error: Datos de usuario incompletos");
-          setTimeout(() => navigate("/"), 1000); // Espera 1 segundo antes de redirigir
-        }
+        setUsuario(parsedUser);
       } catch (error) {
         console.error("Error al parsear usuario:", error);
-        setTimeout(() => navigate("/"), 1000);
+        //setTimeout(() => navigate("/"), 1000);
       }
     } else {
       console.warn("No hay usuario registrado en sessionStorage.");
-      setTimeout(() => navigate("/"), 1000);
+      //setTimeout(() => navigate("/"), 1000);
     }
 
     // Actualizar la hora cada segundo
@@ -50,7 +43,9 @@ const RegistroCorrecto = () => {
 
       {usuario ? (
         <div className="user-info">
+          <p className="name">{usuario.tipo_registro}</p>
           <p className="name">{usuario.nombre}</p>
+          <p className="fecha">Fecha y hora: {usuario.fecha_hora}</p>
           <p className="expediente">Expediente: {usuario.expediente}</p>
         </div>
       ) : (

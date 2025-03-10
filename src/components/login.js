@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Logo from "../images/logo.png";
-import { obtenerUsuariosPorExpediente } from "./consumidor.js";
+import { obtenerUsuariosPorExpediente, login } from "./consumidor.js";
 
 const Login = () => {
   const [expediente, setExpediente] = useState("");
@@ -29,28 +29,18 @@ const Login = () => {
 
     try {
       // Consultar usuario en la API
-      const usuario = await obtenerUsuariosPorExpediente(expedienteInt);
-      console.log("Usuario obtenido:", usuario);
-
-      if (usuario && usuario.length > 0) {
+      //console.log("Usuario obtenido:", usuario);
+      const sesion = await login(expedienteInt, password);
+      console.log(sesion);
+      if(sesion.status === true){
+        console.log("AQUI MERO CAGUAMERO");
+        const usuario = await obtenerUsuariosPorExpediente(expedienteInt);
+        console.log("USUAIRO", usuario);
+        //datos de usuario
+        const nombre_usuario = usuario[0][0]; // Nombre
         const id_usuario = parseInt(usuario[0][1], 10); // ID del usuario
-        const nombre_usuario = usuario[0][3]; // Nombre
-        const apellido_usuario = usuario[0][2]; // Apellido
-        const rol_usuario = usuario[0][4]; // Rol (admin, usuario normal)
-        const password_api = usuario[0][5]; // Contraseña desde API
-
-        // Verificar si el usuario es administrador
-        if (rol_usuario !== "admin") {
-          setError("No tienes permisos de administrador.");
-          return;
-        }
-
-        // Validar la contraseña (esto debería manejarse con hashing en un backend seguro)
-        if (password !== password_api) {
-          setError("Contraseña incorrecta.");
-          return;
-        }
-
+        const apellido_usuario = usuario[0][3]; // Apellido
+        const rol_usuario = usuario[0][5]; // Rol (admin, usuario normal)
         // Guardar sesión en sessionStorage
         sessionStorage.setItem(
           "admin",
@@ -60,11 +50,11 @@ const Login = () => {
             expediente: expedienteInt,
           })
         );
-
         // Redirigir al menú de administración
-        navigate("/menu-admin");
+        navigate("/reportes");
       } else {
         setError("Expediente no encontrado.");
+        return;
       }
     } catch (error) {
       console.error("Error al validar el usuario:", error);

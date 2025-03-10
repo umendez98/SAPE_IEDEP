@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./reportes.css";
 import Logo from "../images/logo.png";
-import { obtenerUsuariosPorNombre, obtenerRegistrosPorIdUsuario } from "./consumidor.js";
+import { obtenerUsuariosPorNombre, obtenerRegistrosPorIdUsuario, obtenerUsuariosPorExpediente } from "./consumidor.js";
 
 const Reportes = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,16 +21,23 @@ const Reportes = () => {
       setLoading(true);
       setError("");
       try {
-        const usuarios = await obtenerUsuariosPorNombre(searchTerm);
+        let usuarios =[];
+        if(/^\d+$/.test(searchTerm)){
+          usuarios = await obtenerUsuariosPorExpediente(searchTerm);
+        }else{
+          usuarios = await obtenerUsuariosPorNombre(searchTerm);
+        }
+        
         if (usuarios && usuarios.length > 0) {
           const usersWithRecords = await Promise.all(
             usuarios.map(async (user) => {
-              const registros = await obtenerRegistrosPorIdUsuario(user[0][1]); // user[1] = ID de usuario
+              let idint = parseInt(usuarios[0][1]);
+              const registros = await obtenerRegistrosPorIdUsuario(idint); // user[1] = ID de usuario              
               return {
-                id: user[1],
-                name: `${user[0][0]} ${user[0][3]} ${user[0][4]}`, // user[0][0] = Nombre, user[0][3] = Apellido Paterno, user[0][4] = Apellido Materno
-                expediente: user[0], // user[0] = Expediente
-                registros: registros || [],
+                id: user[0],
+                name: `${user[0]} ${user[3]} ${user[4]}`, // user[0][0] = Nombre, user[0][3] = Apellido Paterno, user[0][4] = Apellido Materno
+                expediente: user[2], // user[0] = Expediente
+                registros: registros,
               };
             })
           );
@@ -71,7 +78,7 @@ const Reportes = () => {
         <label className="search-label">Buscar:</label>
         <input
           type="text"
-          placeholder="Nombre, expediente o ID"
+          placeholder="Nombre o expediente"
           className="search-input"
           value={searchTerm}
           onChange={handleSearchChange}
@@ -109,20 +116,19 @@ const Reportes = () => {
                         <th>Exp</th>
                         <th>Fecha</th>
                         <th>Hora</th>
-                        <th>Sede</th>
                         <th>Registro</th>
                       </tr>
                     </thead>
                     <tbody>
+                      {console.log(person)}
                       {person.registros
-                        .filter((registro) => (selectedDate ? registro.fecha === selectedDate : true))
+                        .filter((registro) => (selectedDate ? registro[4].slice(0,10) === selectedDate : true))
                         .map((registro, index) => (
                           <tr key={index}>
                             <td>{person.expediente}</td>
-                            <td>{registro.fecha}</td>
-                            <td>{registro.hora}</td>
-                            <td>{registro.sede}</td>
-                            <td>{registro.tipo}</td>
+                            <td>{registro[4].slice(0,10)}</td>
+                            <td>{registro[4].slice(11,16)}</td>
+                            <td>{registro[0]}</td>
                           </tr>
                         ))}
                     </tbody>

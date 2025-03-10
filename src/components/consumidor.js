@@ -210,13 +210,47 @@ async function obtenerUsuariosPorNombre(nombre) {
 
 async function comprobarRegistros(id_usuario, id_lugar) {
     const registros = await obtenerRegistrosPorIdUsuario(id_usuario);
-    const ultimo_registro = registros[0][0];
-    if(ultimo_registro == "entrada"){
-        //Ingresa salida
-        return registros= await registrarEntrada("salida",id_usuario, id_lugar)
-    }else if(ultimo_registro == "salida"){
-        //Ingresa entrada
-        return registros = await registrarEntrada("entrada",id_usuario, id_lugar)
+    if(registros.length ===0){
+        console.log("PUS NO");
+        const respuesta_registro = await registrarEntrada("entrada",id_usuario, id_lugar);
+        return respuesta_registro;
+    }else{
+
+        let ultimo_registro = registros[0][0];
+        if(ultimo_registro == "entrada"){
+            //Ingresa salida
+            const respuesta_registro = await registrarEntrada("salida",id_usuario, id_lugar);
+            return respuesta_registro;
+        }else{
+            //Ingresa entrada
+            const respuesta_registro = await registrarEntrada("entrada",id_usuario, id_lugar);
+            return respuesta_registro;
+        }
+    }
+        
+}
+
+async function login(expediente, password) {
+    try {
+        const response = await fetch("https://luis.umegamentes.uk/IEDEP/api/servicios/usuarios/index.php", {
+            method: "POST",
+            headers: {
+                "Authorization": "123",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "expediente": expediente,
+                "password": password,
+                "endPoint": "login"
+            }),
+        });
+
+        const datos = await response.json();
+        if (datos.status !== 200) throw new Error("Error en la respuesta API");
+        return JSON.parse(datos.data);
+    } catch (error) {
+        console.error("Error al obtener usuario por nombre:", error);
+        return null;
     }
 }
 
@@ -232,4 +266,4 @@ async function comprobarRegistros(id_usuario, id_lugar) {
     console.log(await obtenerUsuariosPorNombre("dummy"));
 })();*/
 
-export {obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre, comprobarRegistros};
+export {login,obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre, comprobarRegistros};

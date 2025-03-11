@@ -50,6 +50,8 @@ async function obtenerLocacionPorNombre(nombre_locacion) {
     }
 }
 
+
+
 ///
 ///
 /// Funciones de Registros
@@ -101,6 +103,8 @@ async function obtenerRegistrosPorIdLugar(id_lugar) {
         return null;
     }
 }
+
+
 
 async function registrarEntrada(tipo_registro, id_usuario, id_lugar) {
     try {
@@ -254,7 +258,33 @@ async function login(expediente, password) {
     }
 }
 
-/* 🔍 **Pruebas de las funciones**
+async function comprobarLugar(latitud, longitud, nombre) {
+    let datos = await obtenerLocacionPorNombre(nombre);
+    
+    const lat1 = datos[0][2];
+    const long1 = datos[0][3];
+    
+    // Convertir de grados a radianes
+    function toRadians(degrees) {
+        return degrees * (Math.PI / 180);
+    }
+
+    // Distancia en el eje Y (latitud en metros)
+    const distanciaLatitud = (latitud - lat1);
+    
+    // Distancia en el eje X (longitud en metros, corregida con cos(latitud))
+    const distanciaLongitud = (longitud - long1) * (111320 * Math.cos(toRadians(latitud)));
+
+    // Calcular la distancia euclidiana
+    const distancia = Math.sqrt(distanciaLatitud**2 + distanciaLongitud**2);
+    
+    console.log(`Distancia: ${distancia.toFixed(1)} metros`);
+    return distancia <= 50;
+}
+
+
+
+/*  **Pruebas de las funciones**
 (async () => {
     console.log(await obtenerLocacionPorID(1));
     console.log(await obtenerLocacionPorNombre("dummy_Location"));
@@ -266,4 +296,4 @@ async function login(expediente, password) {
     console.log(await obtenerUsuariosPorNombre("dummy"));
 })();*/
 
-export {login,obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre, comprobarRegistros};
+export {login,obtenerLocacionPorID, obtenerLocacionPorNombre, obtenerRegistrosPorIdUsuario, obtenerRegistrosPorIdLugar, registrarEntrada, obtenerUsuariosPorID, obtenerUsuariosPorExpediente, obtenerUsuariosPorNombre, comprobarRegistros, comprobarLugar};

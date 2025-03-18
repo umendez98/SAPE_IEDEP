@@ -83,7 +83,6 @@ const Reportes = () => {
           value={searchTerm}
           onChange={handleSearchChange}
         />
-        <button className="search-button">Buscar</button>
       </div>
 
       <div className="filter-section">

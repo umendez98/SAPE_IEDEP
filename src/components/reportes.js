@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./reportes.css";
 import Logo from "../images/logo.png";
+import ExportIcon from "../assets/export.svg";
 import { obtenerUsuariosPorNombre, obtenerRegistrosPorIdUsuario, obtenerUsuariosPorExpediente } from "./consumidor.js";
 
 const Reportes = () => {
@@ -93,6 +94,10 @@ const Reportes = () => {
           value={selectedDate}
           onChange={handleDateSelect}
         />
+      </div>
+
+      <div className="export-section">
+        <img src={ExportIcon} alt="Export Icon" className="export-icon" />
       </div>
 
       <div className="results-container">

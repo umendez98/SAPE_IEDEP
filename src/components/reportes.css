@@ -87,6 +87,23 @@
     border-radius: 8px;
     font-size: 16px;
   }
+
+  .export-section {
+    display: flex;
+    align-self: flex-end;
+    gap: 10px;
+  }
+  
+  .export-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  .export-icon:hover {
+    opacity: 0.7;
+  }
+  
   
   .results-container {
     width: 100%;

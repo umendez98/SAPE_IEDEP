@@ -22,22 +22,22 @@ const Reportes = () => {
       setLoading(true);
       setError("");
       try {
-        let usuarios =[];
-        if(/^\d+$/.test(searchTerm)){
+        let usuarios = [];
+        if (/^\d+$/.test(searchTerm)) {
           usuarios = await obtenerUsuariosPorExpediente(searchTerm);
-        }else{
+        } else {
           usuarios = await obtenerUsuariosPorNombre(searchTerm);
         }
-        
+
         if (usuarios && usuarios.length > 0) {
           const usersWithRecords = await Promise.all(
             usuarios.map(async (user) => {
               let idint = parseInt(usuarios[0][1]);
-              const registros = await obtenerRegistrosPorIdUsuario(idint); // user[1] = ID de usuario              
+              const registros = await obtenerRegistrosPorIdUsuario(idint);
               return {
                 id: user[0],
-                name: `${user[0]} ${user[3]} ${user[4]}`, // user[0][0] = Nombre, user[0][3] = Apellido Paterno, user[0][4] = Apellido Materno
-                expediente: user[2], // user[0] = Expediente
+                name: `${user[0]} ${user[3]} ${user[4]}`,
+                expediente: user[2],
                 registros: registros,
               };
             })
@@ -71,6 +71,32 @@ const Reportes = () => {
     }));
   };
 
+  // Función para exportar datos a CSV
+  const exportToCSV = () => {
+    if (results.length === 0) return;
+
+    const csvRows = [];
+    csvRows.push("Expediente,Fecha,Hora,Registro");
+
+    results.forEach((person) => {
+      person.registros
+        .filter((registro) => (selectedDate ? registro[4].slice(0, 10) === selectedDate : true))
+        .forEach((registro) => {
+          csvRows.push(`${person.expediente},${registro[4].slice(0, 10)},${registro[4].slice(11, 16)},${registro[0]}`);
+        });
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reportes.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <div className="reportes-container">
       <img src={Logo} alt="IEDEP Logo" className="logo" />
@@ -88,16 +114,23 @@ const Reportes = () => {
 
       <div className="filter-section">
         <label className="filter-label">Filtros</label>
-        <input
-          type="date"
-          className="date-picker"
-          value={selectedDate}
-          onChange={handleDateSelect}
-        />
+        <div className="date-export-container">
+          <input
+            type="date"
+            className="date-picker"
+            value={selectedDate}
+            onChange={handleDateSelect}
+          />
+        </div>
       </div>
 
       <div className="export-section">
-        <img src={ExportIcon} alt="Export Icon" className="export-icon" />
+        <img
+            src={ExportIcon}
+            alt="Export Icon"
+            className={`export-icon ${results.length === 0 ? "disabled" : ""}`}
+            onClick={results.length > 0 ? exportToCSV : null}
+          />
       </div>
 
       <div className="results-container">
@@ -126,12 +159,12 @@ const Reportes = () => {
                     <tbody>
                       {console.log(person)}
                       {person.registros
-                        .filter((registro) => (selectedDate ? registro[4].slice(0,10) === selectedDate : true))
+                        .filter((registro) => (selectedDate ? registro[4].slice(0, 10) === selectedDate : true))
                         .map((registro, index) => (
                           <tr key={index}>
                             <td>{person.expediente}</td>
-                            <td>{registro[4].slice(0,10)}</td>
-                            <td>{registro[4].slice(11,16)}</td>
+                            <td>{registro[4].slice(0, 10)}</td>
+                            <td>{registro[4].slice(11, 16)}</td>
                             <td>{registro[0]}</td>
                           </tr>
                         ))}

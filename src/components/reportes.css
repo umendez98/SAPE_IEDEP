@@ -100,8 +100,13 @@
     cursor: pointer;
   }
   
-  .export-icon:hover {
-    opacity: .7;
+  .export-icon.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .export-icon:not(.disabled):hover {
+    opacity: 0.7;
   }
   
   

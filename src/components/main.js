@@ -2,7 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./main.css";
 import Logo from "../images/logo.png";
-import { obtenerUsuariosPorExpediente, registrarEntrada, comprobarRegistros } from "./consumidor.js";
+import { obtenerUsuariosPorExpediente, comprobarRegistros, comprobarLugar, obtenerLocacionPorID } from "./consumidor.js";
+
+// Obtener lugar actual
+let latitud;
+let longitud;
+navigator.geolocation.getCurrentPosition(
+  function (position) {
+    latitud = position.coords.latitude;
+    longitud = position.coords.longitude;
+    console.log(latitud, longitud);
+  },
+  function (error) {
+    console.error("Error al obtener la ubicación", error);
+  }
+);
 
 const Main = () => {
   const [expediente, setExpediente] = useState("");
@@ -74,15 +88,18 @@ const Main = () => {
         const apellido_materno = usuario[0][4]; // Apellido Materno
         const apellido_paterno = usuario[0][3]; // Apellido Paterno
         const nombre_usuario = usuario[0][0]; // Nombre
+        const id_lugar = parseInt(usuario[0][6]); // ID de la locación
+
+        // Obtener locación por ID
+        const lugar = await obtenerLocacionPorID(id_lugar);
+        const estaEnLugar = await comprobarLugar(latitud, longitud, lugar[0][1]);
+        console.log("Está en el lugar correcto:", estaEnLugar);
 
         // Concatenar nombre completo
         const nombre_completo = `${nombre_usuario} ${apellido_paterno} ${apellido_materno}`;
 
         console.log("ID de usuario:", id_usuario);
         console.log("Nombre completo:", nombre_completo);
-
-        // Simulación de ID de locación (ajustar según API)
-        const id_lugar = 1;
 
         // Verificación de datos antes de enviar
         console.log("Enviando a registrar entrada:");
@@ -94,6 +111,13 @@ const Main = () => {
         if (isNaN(id_usuario)) {
           console.error("Error: ID de usuario inválido.");
           sessionStorage.setItem("errorRegistro", "El ID del usuario obtenido no es válido.");
+          navigate("/registro-incorrecto");
+          return;
+        }
+
+        if (!estaEnLugar) {
+          console.error("Error: Lugar incorrecto");
+          sessionStorage.setItem("errorRegistro", "No estás en tu sede");
           navigate("/registro-incorrecto");
           return;
         }
@@ -110,7 +134,7 @@ const Main = () => {
             nombre: nombre_completo,
             expediente: expedienteInt,
             fecha_hora: fecha_hora,
-            tipo_registro: tipo_registro
+            tipo_registro: tipo_registro,
           })
         );
 
